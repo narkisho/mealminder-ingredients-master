@@ -14,6 +14,7 @@ import { Tables } from "@/integrations/supabase/types";
 const Cooking = () => {
   const [image, setImage] = useState<string | null>(null);
   const [recipe, setRecipe] = useState<string | null>(null);
+  const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("upload");
   const { toast } = useToast();
@@ -82,7 +83,7 @@ const Cooking = () => {
       }
 
       const { error } = await supabase.from('recipes').insert({
-        recipe_text: recipe,
+        recipe_text: recipe + (additionalInstructions ? `\n\nAdditional Instructions:\n${additionalInstructions}` : ''),
         ingredients_image: image,
         user_id: session.user.id
       });
@@ -94,6 +95,7 @@ const Cooking = () => {
         description: "Recipe saved successfully!",
       });
 
+      setAdditionalInstructions("");
       refetchRecipes();
     } catch (error) {
       console.error("Error saving recipe:", error);
@@ -107,7 +109,12 @@ const Cooking = () => {
 
   const handleEditRecipe = (savedRecipe: Tables<"recipes">) => {
     setImage(savedRecipe.ingredients_image);
-    setRecipe(savedRecipe.recipe_text);
+    
+    // Split the recipe text to separate the original recipe from additional instructions
+    const parts = savedRecipe.recipe_text.split('\n\nAdditional Instructions:\n');
+    setRecipe(parts[0]);
+    setAdditionalInstructions(parts[1] || '');
+    
     setActiveTab("upload");
     toast({
       title: "Recipe loaded for editing",
@@ -132,6 +139,7 @@ const Cooking = () => {
         timeAvailable: 30,
       });
       setRecipe(generatedRecipe);
+      setAdditionalInstructions("");
     } catch (error) {
       toast({
         title: "Error generating recipe",
@@ -166,7 +174,14 @@ const Cooking = () => {
           </TabsContent>
 
           <TabsContent value="recipe" className="mt-6">
-            {recipe && <CurrentRecipeTab recipe={recipe} onSave={handleSaveRecipe} />}
+            {recipe && (
+              <CurrentRecipeTab 
+                recipe={recipe} 
+                onSave={handleSaveRecipe}
+                additionalInstructions={additionalInstructions}
+                onInstructionsChange={setAdditionalInstructions}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="saved" className="mt-6">
