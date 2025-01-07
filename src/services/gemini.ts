@@ -14,6 +14,10 @@ export const generateRecipeFromImage = async (
     timeAvailable?: number;
   }
 ) => {
+  if (!genAI) {
+    throw new Error("Gemini API not initialized. Please check your API key.");
+  }
+
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
     

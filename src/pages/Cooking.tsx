@@ -1,9 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
-import { generateRecipeFromImage } from "@/services/gemini";
+import { useToast } from "@/hooks/use-toast";
+import { generateRecipeFromImage, initializeGemini } from "@/services/gemini";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,18 +14,43 @@ const Cooking = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Check authentication status
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/login");
-      toast({
-        title: "Authentication required",
-        description: "Please log in to access the cooking interface",
-        variant: "destructive",
-      });
-    }
-  };
+  useEffect(() => {
+    const initAPI = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate("/login");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('secrets')
+          .select('value')
+          .eq('name', 'GEMINI_API_KEY')
+          .single();
+
+        if (error || !data) {
+          toast({
+            title: "API Key Required",
+            description: "Please set up your Gemini API key in the project settings",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        initializeGemini(data.value);
+      } catch (error) {
+        console.error("Error initializing:", error);
+        toast({
+          title: "Initialization Error",
+          description: "Failed to initialize the cooking interface",
+          variant: "destructive",
+        });
+      }
+    };
+
+    initAPI();
+  }, [navigate, toast]);
 
   // Handle file upload
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
