@@ -4,12 +4,13 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
 const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN") {
         toast.success("Successfully signed in!");
         navigate("/");
@@ -18,11 +19,18 @@ const Login = () => {
         toast("Signed out");
       }
       if (event === "USER_UPDATED") {
-        supabase.auth.getSession().then(({ data: { session }, error }) => {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
           if (error) {
             toast.error(getErrorMessage(error));
           }
-        });
+        } catch (error) {
+          if (error instanceof AuthError) {
+            toast.error(getErrorMessage(error));
+          } else {
+            toast.error("An unexpected error occurred");
+          }
+        }
       }
     });
 
@@ -75,18 +83,25 @@ const Login = () => {
   );
 };
 
-const getErrorMessage = (error: any) => {
-  if (error.message) {
-    switch (error.message) {
-      case 'Invalid login credentials':
-        return 'Invalid email or password. Please check your credentials and try again.';
-      case 'Email not confirmed':
-        return 'Please verify your email address before signing in.';
+const getErrorMessage = (error: AuthError) => {
+  if (error instanceof AuthApiError) {
+    switch (error.status) {
+      case 400:
+        switch (error.message) {
+          case 'Invalid login credentials':
+            return 'Invalid email or password. Please check your credentials and try again.';
+          case 'Email not confirmed':
+            return 'Please verify your email address before signing in.';
+          default:
+            return error.message;
+        }
+      case 422:
+        return 'Invalid email format. Please enter a valid email address.';
       default:
         return error.message;
     }
   }
-  return 'An error occurred during authentication.';
+  return error.message || 'An error occurred during authentication.';
 };
 
 export default Login;
