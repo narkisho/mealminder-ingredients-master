@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import Cooking from "./pages/Cooking";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/cooking" element={<Cooking />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
