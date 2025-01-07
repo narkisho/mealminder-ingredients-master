@@ -18,10 +18,11 @@ const Login = () => {
         toast("Signed out");
       }
       if (event === "USER_UPDATED") {
-        const { error } = supabase.auth.getSession();
-        if (error) {
-          toast.error(getErrorMessage(error));
-        }
+        supabase.auth.getSession().then(({ data: { session }, error }) => {
+          if (error) {
+            toast.error(getErrorMessage(error));
+          }
+        });
       }
     });
 
