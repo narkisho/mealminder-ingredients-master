@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
 interface UploadTabProps {
@@ -6,9 +7,18 @@ interface UploadTabProps {
   setImage: (image: string | null) => void;
   isLoading: boolean;
   onGenerateRecipe: () => void;
+  additionalInstructions: string;
+  onInstructionsChange: (value: string) => void;
 }
 
-export const UploadTab = ({ image, setImage, isLoading, onGenerateRecipe }: UploadTabProps) => {
+export const UploadTab = ({ 
+  image, 
+  setImage, 
+  isLoading, 
+  onGenerateRecipe,
+  additionalInstructions,
+  onInstructionsChange 
+}: UploadTabProps) => {
   const { toast } = useToast();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +85,19 @@ export const UploadTab = ({ image, setImage, isLoading, onGenerateRecipe }: Uplo
           accept="image/*"
           onChange={handleFileUpload}
           className="hidden"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="additional-instructions" className="text-sm font-medium">
+          Additional Instructions
+        </label>
+        <Textarea
+          id="additional-instructions"
+          placeholder="Add any additional instructions or notes here..."
+          value={additionalInstructions}
+          onChange={(e) => onInstructionsChange(e.target.value)}
+          className="min-h-[100px]"
         />
       </div>
 

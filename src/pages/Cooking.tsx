@@ -20,7 +20,6 @@ const Cooking = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Fetch user's recipes
   const { data: recipes, refetch: refetchRecipes } = useQuery({
     queryKey: ['recipes'],
     queryFn: async () => {
@@ -170,18 +169,13 @@ const Cooking = () => {
               setImage={setImage}
               isLoading={isLoading}
               onGenerateRecipe={handleGenerateRecipe}
+              additionalInstructions={additionalInstructions}
+              onInstructionsChange={setAdditionalInstructions}
             />
           </TabsContent>
 
           <TabsContent value="recipe" className="mt-6">
-            {recipe && (
-              <CurrentRecipeTab 
-                recipe={recipe} 
-                onSave={handleSaveRecipe}
-                additionalInstructions={additionalInstructions}
-                onInstructionsChange={setAdditionalInstructions}
-              />
-            )}
+            {recipe && <CurrentRecipeTab recipe={recipe} onSave={handleSaveRecipe} />}
           </TabsContent>
 
           <TabsContent value="saved" className="mt-6">
