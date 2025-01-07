@@ -23,22 +23,8 @@ const Cooking = () => {
           return;
         }
 
-        const { data, error } = await supabase
-          .from('secrets')
-          .select('value')
-          .eq('name', 'GEMINI_API_KEY')
-          .single();
-
-        if (error || !data) {
-          toast({
-            title: "API Key Required",
-            description: "Please set up your Gemini API key in the project settings",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        initializeGemini(data.value);
+        // Initialize Gemini with the API key from Supabase config
+        initializeGemini(process.env.GEMINI_API_KEY || '');
       } catch (error) {
         console.error("Error initializing:", error);
         toast({
