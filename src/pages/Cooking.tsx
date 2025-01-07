@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { generateRecipeFromImage, initializeGemini } from "@/services/gemini";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
 
 const Cooking = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -13,6 +15,20 @@ const Cooking = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Fetch user's recipes
+  const { data: recipes, refetch: refetchRecipes } = useQuery({
+    queryKey: ['recipes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
   useEffect(() => {
     const initAPI = async () => {
@@ -23,7 +39,6 @@ const Cooking = () => {
           return;
         }
 
-        // Initialize Gemini with the API key from Supabase config
         const { data: { value }, error } = await supabase.functions.invoke('get-gemini-key');
         
         if (error || !value) {
@@ -49,7 +64,6 @@ const Cooking = () => {
     initAPI();
   }, [navigate, toast]);
 
-  // Handle file upload
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -61,7 +75,6 @@ const Cooking = () => {
     }
   }, []);
 
-  // Handle drag and drop
   const handleDrop = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     const file = event.dataTransfer.files?.[0];
@@ -74,7 +87,33 @@ const Cooking = () => {
     }
   }, []);
 
-  // Generate recipe
+  const saveRecipe = async () => {
+    if (!recipe || !image) return;
+
+    try {
+      const { error } = await supabase.from('recipes').insert({
+        recipe_text: recipe,
+        ingredients_image: image
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Recipe saved successfully!",
+      });
+
+      refetchRecipes();
+    } catch (error) {
+      console.error("Error saving recipe:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save recipe. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleGenerateRecipe = async () => {
     if (!image) {
       toast({
@@ -110,9 +149,10 @@ const Cooking = () => {
         <h1 className="text-4xl font-bold text-center mb-8">Cooking Assistant</h1>
         
         <Tabs defaultValue="upload" className="w-full max-w-3xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="upload">Upload Ingredients</TabsTrigger>
-            <TabsTrigger value="recipe" disabled={!recipe}>Recipe</TabsTrigger>
+            <TabsTrigger value="recipe" disabled={!recipe}>Current Recipe</TabsTrigger>
+            <TabsTrigger value="saved">Saved Recipes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="upload" className="mt-6">
@@ -171,10 +211,40 @@ const Cooking = () => {
 
           <TabsContent value="recipe" className="mt-6">
             {recipe && (
-              <div className="prose prose-sm max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: recipe.replace(/\n/g, "<br/>") }} />
+              <div className="space-y-4">
+                <div className="prose prose-sm max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: recipe.replace(/\n/g, "<br/>") }} />
+                </div>
+                <Button onClick={saveRecipe} className="w-full">Save Recipe</Button>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="saved" className="mt-6">
+            <div className="grid gap-4">
+              {recipes?.map((savedRecipe) => (
+                <Card key={savedRecipe.id}>
+                  <CardHeader>
+                    <CardTitle>Recipe from {new Date(savedRecipe.created_at).toLocaleDateString()}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {savedRecipe.ingredients_image && (
+                      <img
+                        src={savedRecipe.ingredients_image}
+                        alt="Ingredients"
+                        className="max-h-48 rounded-lg mb-4"
+                      />
+                    )}
+                    <div className="prose prose-sm max-w-none">
+                      <div dangerouslySetInnerHTML={{ __html: savedRecipe.recipe_text.replace(/\n/g, "<br/>") }} />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {recipes?.length === 0 && (
+                <p className="text-center text-muted-foreground">No saved recipes yet.</p>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </main>
