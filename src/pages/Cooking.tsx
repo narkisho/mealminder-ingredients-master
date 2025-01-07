@@ -109,7 +109,6 @@ const Cooking = () => {
   const handleEditRecipe = (savedRecipe: Tables<"recipes">) => {
     setImage(savedRecipe.ingredients_image);
     
-    // Split the recipe text to separate the original recipe from additional instructions
     const parts = savedRecipe.recipe_text.split('\n\nAdditional Instructions:\n');
     setRecipe(parts[0]);
     setAdditionalInstructions(parts[1] || '');
@@ -136,9 +135,9 @@ const Cooking = () => {
       const generatedRecipe = await generateRecipeFromImage(image, {
         skillLevel: "intermediate",
         timeAvailable: 30,
+        additionalInstructions: additionalInstructions,
       });
       setRecipe(generatedRecipe);
-      setAdditionalInstructions("");
     } catch (error) {
       toast({
         title: "Error generating recipe",

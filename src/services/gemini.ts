@@ -12,6 +12,7 @@ export const generateRecipeFromImage = async (
     dietaryRestrictions?: string[];
     skillLevel?: string;
     timeAvailable?: number;
+    additionalInstructions?: string;
   }
 ) => {
   if (!genAI) {
@@ -19,10 +20,8 @@ export const generateRecipeFromImage = async (
   }
 
   try {
-    // Update to use the new model name
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
-    // Convert base64 image to proper format
     const imageData = {
       inlineData: {
         data: image.split(",")[1],
@@ -34,6 +33,7 @@ export const generateRecipeFromImage = async (
     ${preferences.dietaryRestrictions ? `Dietary restrictions: ${preferences.dietaryRestrictions.join(", ")}` : ""}
     ${preferences.skillLevel ? `Skill level: ${preferences.skillLevel}` : ""}
     ${preferences.timeAvailable ? `Time available: ${preferences.timeAvailable} minutes` : ""}
+    ${preferences.additionalInstructions ? `Additional Instructions: ${preferences.additionalInstructions}` : ""}
     
     Please provide:
     1. List of identified ingredients with confidence scores
