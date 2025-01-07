@@ -9,11 +9,13 @@ import { useQuery } from "@tanstack/react-query";
 import { UploadTab } from "@/components/cooking/UploadTab";
 import { CurrentRecipeTab } from "@/components/cooking/CurrentRecipeTab";
 import { SavedRecipesTab } from "@/components/cooking/SavedRecipesTab";
+import { Tables } from "@/integrations/supabase/types";
 
 const Cooking = () => {
   const [image, setImage] = useState<string | null>(null);
   const [recipe, setRecipe] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("upload");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -65,7 +67,7 @@ const Cooking = () => {
     initAPI();
   }, [navigate, toast]);
 
-  const saveRecipe = async () => {
+  const handleSaveRecipe = async () => {
     if (!recipe || !image) return;
 
     try {
@@ -103,6 +105,16 @@ const Cooking = () => {
     }
   };
 
+  const handleEditRecipe = (savedRecipe: Tables<"recipes">) => {
+    setImage(savedRecipe.ingredients_image);
+    setRecipe(savedRecipe.recipe_text);
+    setActiveTab("upload");
+    toast({
+      title: "Recipe loaded for editing",
+      description: "You can now modify and save this recipe as a new version.",
+    });
+  };
+
   const handleGenerateRecipe = async () => {
     if (!image) {
       toast({
@@ -137,7 +149,7 @@ const Cooking = () => {
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">Cooking Assistant</h1>
         
-        <Tabs defaultValue="upload" className="w-full max-w-3xl mx-auto">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="upload">Upload Ingredients</TabsTrigger>
             <TabsTrigger value="recipe" disabled={!recipe}>Current Recipe</TabsTrigger>
@@ -154,11 +166,11 @@ const Cooking = () => {
           </TabsContent>
 
           <TabsContent value="recipe" className="mt-6">
-            {recipe && <CurrentRecipeTab recipe={recipe} onSave={saveRecipe} />}
+            {recipe && <CurrentRecipeTab recipe={recipe} onSave={handleSaveRecipe} />}
           </TabsContent>
 
           <TabsContent value="saved" className="mt-6">
-            <SavedRecipesTab recipes={recipes} />
+            <SavedRecipesTab recipes={recipes} onEditRecipe={handleEditRecipe} />
           </TabsContent>
         </Tabs>
       </main>
