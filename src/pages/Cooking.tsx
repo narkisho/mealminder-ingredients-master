@@ -24,7 +24,18 @@ const Cooking = () => {
         }
 
         // Initialize Gemini with the API key from Supabase config
-        initializeGemini(process.env.GEMINI_API_KEY || '');
+        const { data: { value }, error } = await supabase.functions.invoke('get-gemini-key');
+        
+        if (error || !value) {
+          toast({
+            title: "API Key Error",
+            description: "Could not retrieve the API key. Please try again later.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        initializeGemini(value);
       } catch (error) {
         console.error("Error initializing:", error);
         toast({
