@@ -4,6 +4,17 @@ import { Tables } from "@/integrations/supabase/types";
 import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 interface SavedRecipesTabProps {
   recipes: Tables<"recipes">[] | undefined;
@@ -12,6 +23,7 @@ interface SavedRecipesTabProps {
 
 export const SavedRecipesTab = ({ recipes, onEditRecipe }: SavedRecipesTabProps) => {
   const { toast } = useToast();
+  const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
 
   const handleDeleteRecipe = async (recipeId: string) => {
     try {
@@ -32,6 +44,8 @@ export const SavedRecipesTab = ({ recipes, onEditRecipe }: SavedRecipesTabProps)
         description: "Failed to delete recipe",
         variant: "destructive",
       });
+    } finally {
+      setRecipeToDelete(null);
     }
   };
 
@@ -51,7 +65,7 @@ export const SavedRecipesTab = ({ recipes, onEditRecipe }: SavedRecipesTabProps)
               <Button
                 variant="destructive"
                 size="icon"
-                onClick={() => handleDeleteRecipe(savedRecipe.id)}
+                onClick={() => setRecipeToDelete(savedRecipe.id)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -74,6 +88,23 @@ export const SavedRecipesTab = ({ recipes, onEditRecipe }: SavedRecipesTabProps)
       {recipes?.length === 0 && (
         <p className="text-center text-muted-foreground">No saved recipes yet.</p>
       )}
+
+      <AlertDialog open={!!recipeToDelete} onOpenChange={() => setRecipeToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your recipe.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => recipeToDelete && handleDeleteRecipe(recipeToDelete)}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
