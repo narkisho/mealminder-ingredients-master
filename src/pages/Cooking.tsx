@@ -1,13 +1,14 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { generateRecipeFromImage, initializeGemini } from "@/services/gemini";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
+import { UploadTab } from "@/components/cooking/UploadTab";
+import { CurrentRecipeTab } from "@/components/cooking/CurrentRecipeTab";
+import { SavedRecipesTab } from "@/components/cooking/SavedRecipesTab";
 
 const Cooking = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -64,36 +65,24 @@ const Cooking = () => {
     initAPI();
   }, [navigate, toast]);
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  }, []);
-
-  const handleDrop = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  }, []);
-
   const saveRecipe = async () => {
     if (!recipe || !image) return;
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        toast({
+          title: "Authentication Error",
+          description: "Please log in to save recipes",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase.from('recipes').insert({
         recipe_text: recipe,
-        ingredients_image: image
+        ingredients_image: image,
+        user_id: session.user.id
       });
 
       if (error) throw error;
@@ -156,95 +145,20 @@ const Cooking = () => {
           </TabsList>
 
           <TabsContent value="upload" className="mt-6">
-            <div
-              className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDrop}
-              onClick={() => document.getElementById("file-upload")?.click()}
-            >
-              {image ? (
-                <div className="space-y-4">
-                  <img
-                    src={image}
-                    alt="Uploaded ingredients"
-                    className="max-h-64 mx-auto rounded-lg"
-                  />
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setImage(null);
-                    }}
-                    variant="outline"
-                  >
-                    Remove Image
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-lg">
-                    Drag and drop an image here, or click to select a file
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Supported formats: JPG, PNG
-                  </p>
-                </div>
-              )}
-              <input
-                id="file-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </div>
-
-            <div className="mt-6 text-center">
-              <Button
-                onClick={handleGenerateRecipe}
-                disabled={!image || isLoading}
-                className="w-full max-w-md"
-              >
-                {isLoading ? "Generating Recipe..." : "Generate Recipe"}
-              </Button>
-            </div>
+            <UploadTab
+              image={image}
+              setImage={setImage}
+              isLoading={isLoading}
+              onGenerateRecipe={handleGenerateRecipe}
+            />
           </TabsContent>
 
           <TabsContent value="recipe" className="mt-6">
-            {recipe && (
-              <div className="space-y-4">
-                <div className="prose prose-sm max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: recipe.replace(/\n/g, "<br/>") }} />
-                </div>
-                <Button onClick={saveRecipe} className="w-full">Save Recipe</Button>
-              </div>
-            )}
+            {recipe && <CurrentRecipeTab recipe={recipe} onSave={saveRecipe} />}
           </TabsContent>
 
           <TabsContent value="saved" className="mt-6">
-            <div className="grid gap-4">
-              {recipes?.map((savedRecipe) => (
-                <Card key={savedRecipe.id}>
-                  <CardHeader>
-                    <CardTitle>Recipe from {new Date(savedRecipe.created_at).toLocaleDateString()}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {savedRecipe.ingredients_image && (
-                      <img
-                        src={savedRecipe.ingredients_image}
-                        alt="Ingredients"
-                        className="max-h-48 rounded-lg mb-4"
-                      />
-                    )}
-                    <div className="prose prose-sm max-w-none">
-                      <div dangerouslySetInnerHTML={{ __html: savedRecipe.recipe_text.replace(/\n/g, "<br/>") }} />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {recipes?.length === 0 && (
-                <p className="text-center text-muted-foreground">No saved recipes yet.</p>
-              )}
-            </div>
+            <SavedRecipesTab recipes={recipes} />
           </TabsContent>
         </Tabs>
       </main>
