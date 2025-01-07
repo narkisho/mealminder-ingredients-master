@@ -19,7 +19,8 @@ export const generateRecipeFromImage = async (
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+    // Update to use the new model name
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     // Convert base64 image to proper format
     const imageData = {
