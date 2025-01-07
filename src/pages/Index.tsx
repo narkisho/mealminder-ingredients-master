@@ -1,9 +1,37 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleStartCooking = () => {
+    if (user) {
+      // If logged in, navigate to the cooking interface
+      navigate("/cooking");
+    } else {
+      // If not logged in, navigate to register
+      navigate("/register");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -21,10 +49,10 @@ const Index = () => {
             that match your dietary preferences and cooking style.
           </p>
           <Button
-            onClick={() => navigate("/register")}
+            onClick={handleStartCooking}
             className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 rounded-full animate-fade-in"
           >
-            Start Cooking Today
+            {user ? "Start Cooking" : "Start Cooking Today"}
           </Button>
         </div>
       </section>
@@ -67,10 +95,10 @@ const Index = () => {
             Join thousands of home chefs who are already creating amazing meals with MealMind.
           </p>
           <Button
-            onClick={() => navigate("/register")}
+            onClick={handleStartCooking}
             className="bg-accent hover:bg-accent/90 text-white text-lg px-8 py-6 rounded-full"
           >
-            Get Started Free
+            {user ? "Start Cooking" : "Get Started Free"}
           </Button>
         </div>
       </section>
