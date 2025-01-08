@@ -25,14 +25,14 @@ export const FormattedRecipe = ({ recipe }: FormattedRecipeProps) => {
 
   // Split the recipe into sections based on common headers and format them
   const formatRecipe = (text: string) => {
-    const sections = text.split(/\n(?=\*\*[^*]+:\*\*|\*\*[^*]+\*\*(?!\:))/);
+    const sections = text.split(/\n(?=\d+\.|[A-Za-z]+:|\*\*[^*]+:\*\*|\*\*[^*]+\*\*(?!\:))/);
     
     return sections.map((section, index) => {
       // Handle confidence scores and ingredient lists
-      if (section.includes("Confidence:")) {
+      if (section.includes("(Confidence:")) {
         const [ingredient, confidence] = section.split("(Confidence:");
         return (
-          <li key={index} className="mb-3 text-gray-700">
+          <li key={index} className="mb-3 text-gray-700 list-none">
             <span className="font-semibold">{ingredient.replace(/\*/g, '').trim()}</span>
             <span className="text-gray-500 text-sm"> (Confidence: {confidence.replace(/[*)\n]/g, '').trim()})</span>
           </li>
@@ -52,10 +52,10 @@ export const FormattedRecipe = ({ recipe }: FormattedRecipeProps) => {
             <div className="pl-4 space-y-3">
               {content.map((line, i) => {
                 // Handle bullet points
-                if (line.trim().startsWith("*")) {
+                if (line.trim().startsWith("•")) {
                   return (
                     <li key={i} className="list-none ml-4 text-gray-700">
-                      {line.replace(/^\*\s/, "• ")}
+                      {line.trim()}
                     </li>
                   );
                 }
@@ -66,6 +66,16 @@ export const FormattedRecipe = ({ recipe }: FormattedRecipeProps) => {
                       <span className="font-semibold min-w-[24px]">{line.match(/^\d+/)[0]}.</span>
                       <p>{line.replace(/^\d+\.\s*/, "").trim()}</p>
                     </div>
+                  );
+                }
+                // Handle key-value pairs (like "Yields:", "Prep time:")
+                if (line.includes(":")) {
+                  const [key, value] = line.split(":");
+                  return (
+                    <p key={i} className="text-gray-700">
+                      <span className="font-semibold">{key.trim()}:</span>
+                      <span>{value.trim()}</span>
+                    </p>
                   );
                 }
                 // Regular text
