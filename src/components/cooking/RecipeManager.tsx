@@ -49,6 +49,9 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
       toast.success("Recipe saved successfully!");
       setAdditionalInstructions("");
       refetchRecipes();
+      setActiveTab("upload"); // Switch back to upload tab after saving
+      setRecipe(null); // Clear the current recipe
+      setImage(null); // Clear the current image
     } catch (error) {
       console.error("Error saving recipe:", error);
       toast.error("Failed to save recipe. Please try again.");
