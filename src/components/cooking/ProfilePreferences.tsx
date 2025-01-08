@@ -85,7 +85,7 @@ export const ProfilePreferences = () => {
         setCuisinePreferences(profile.cuisine_preferences || []);
         
         // Safely handle time preferences
-        const savedTimePreferences = profile.time_preferences as TimePreferences;
+        const savedTimePreferences = profile.time_preferences as unknown as TimePreferences | null;
         if (savedTimePreferences && 
             typeof savedTimePreferences.weekday === 'number' && 
             typeof savedTimePreferences.weekend === 'number') {
@@ -117,7 +117,7 @@ export const ProfilePreferences = () => {
           dietary_preferences: dietaryPreferences,
           available_equipment: equipment,
           cuisine_preferences: cuisinePreferences,
-          time_preferences: timePreferences,
+          time_preferences: timePreferences as unknown as Json,
         })
         .eq("id", session.user.id);
 
