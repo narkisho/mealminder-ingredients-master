@@ -52,14 +52,16 @@ const Cooking = () => {
   return (
     <div className="min-h-screen bg-gradient-soft">
       <Navbar />
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl md:text-5xl font-display font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary text-center mb-4">
-            Your Personal Chef Assistant
-          </h1>
-          <p className="text-center text-lg text-muted-foreground mb-6">
-            Upload your ingredients and let AI create the perfect recipe for you
-          </p>
+      <main className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="bg-white/40 backdrop-blur-sm rounded-xl p-8 shadow-lg">
+            <h1 className="text-3xl md:text-5xl font-display font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary text-center">
+              Your Personal Chef Assistant
+            </h1>
+            <p className="text-center text-lg text-muted-foreground mt-4">
+              Upload your ingredients and let AI create the perfect recipe for you
+            </p>
+          </div>
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 animate-fade-in">
             <RecipeManager recipes={recipes} refetchRecipes={refetchRecipes} />
           </div>
