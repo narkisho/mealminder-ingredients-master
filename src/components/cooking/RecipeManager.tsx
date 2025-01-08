@@ -93,7 +93,7 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
-      <TabsList className="flex flex-col w-full max-w-xs mx-auto gap-1 bg-transparent p-0 mb-4 relative z-10">
+      <TabsList className="flex flex-col w-full max-w-xs mx-auto gap-1 bg-transparent p-0 mb-8 relative z-10">
         <TabsTrigger 
           value="upload" 
           className="w-full py-2 px-6 bg-white/80 backdrop-blur-sm hover:bg-white/90 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white shadow-md hover:shadow-lg transition-all duration-300"
@@ -116,7 +116,7 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
       </TabsList>
 
       <div className="relative z-0">
-        <TabsContent value="upload" className="mt-2">
+        <TabsContent value="upload" className="mt-6">
           <UploadTab
             image={image}
             setImage={setImage}
@@ -127,7 +127,7 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
           />
         </TabsContent>
 
-        <TabsContent value="recipe" className="mt-2">
+        <TabsContent value="recipe" className="mt-6">
           {recipe && (
             <CurrentRecipeTab 
               recipe={recipe} 
@@ -137,7 +137,7 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
           )}
         </TabsContent>
 
-        <TabsContent value="saved" className="mt-2">
+        <TabsContent value="saved" className="mt-6">
           <SavedRecipesTab recipes={recipes} onEditRecipe={handleEditRecipe} />
         </TabsContent>
       </div>
