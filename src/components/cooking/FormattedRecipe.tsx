@@ -5,9 +5,10 @@ import html2pdf from 'html2pdf.js';
 
 interface FormattedRecipeProps {
   recipe: string;
+  image?: string | null;
 }
 
-export const FormattedRecipe = ({ recipe }: FormattedRecipeProps) => {
+export const FormattedRecipe = ({ recipe, image }: FormattedRecipeProps) => {
   const handlePrint = () => {
     const element = document.getElementById('recipe-content');
     const opt = {
@@ -111,6 +112,17 @@ export const FormattedRecipe = ({ recipe }: FormattedRecipeProps) => {
         <h2 className="text-3xl font-display font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent border-b-2 border-primary/20 pb-4">
           Your Generated Recipe
         </h2>
+        
+        {image && (
+          <div className="mb-8">
+            <img
+              src={image}
+              alt="Recipe ingredients"
+              className="max-h-64 mx-auto rounded-lg shadow-md"
+            />
+          </div>
+        )}
+
         <div className="space-y-6">
           {formatRecipe(recipe)}
         </div>

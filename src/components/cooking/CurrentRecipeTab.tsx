@@ -4,14 +4,15 @@ import { FormattedRecipe } from "./FormattedRecipe";
 
 interface CurrentRecipeTabProps {
   recipe: string;
+  image: string | null;
   onSave: () => void;
   onDelete: () => void;
 }
 
-export const CurrentRecipeTab = ({ recipe, onSave, onDelete }: CurrentRecipeTabProps) => {
+export const CurrentRecipeTab = ({ recipe, image, onSave, onDelete }: CurrentRecipeTabProps) => {
   return (
     <div className="space-y-6">
-      <FormattedRecipe recipe={recipe} />
+      <FormattedRecipe recipe={recipe} image={image} />
       
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
         <Button 

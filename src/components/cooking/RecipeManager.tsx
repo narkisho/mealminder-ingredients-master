@@ -131,6 +131,7 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
           {recipe && (
             <CurrentRecipeTab 
               recipe={recipe} 
+              image={image}
               onSave={handleSaveRecipe} 
               onDelete={handleDeleteCurrentRecipe}
             />
