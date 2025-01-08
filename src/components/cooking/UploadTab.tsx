@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { CameraCapture } from "./CameraCapture";
 import { FileUpload } from "./FileUpload";
 import { GenerateRecipeButton } from "./GenerateRecipeButton";
 
@@ -34,8 +32,6 @@ export const UploadTab = ({
 
   return (
     <div className="space-y-6">
-      {!image && <CameraCapture onImageCapture={setImage} />}
-      
       <FileUpload
         image={image}
         onImageChange={setImage}
