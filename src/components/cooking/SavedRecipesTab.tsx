@@ -49,12 +49,17 @@ export const SavedRecipesTab = ({ recipes, onEditRecipe }: SavedRecipesTabProps)
     }
   };
 
+  const formatDateTime = (date: string) => {
+    const d = new Date(date);
+    return `${d.toLocaleDateString()} at ${d.toLocaleTimeString()}`;
+  };
+
   return (
     <div className="grid gap-4">
       {recipes?.map((savedRecipe) => (
         <Card key={savedRecipe.id}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle>Recipe from {new Date(savedRecipe.created_at).toLocaleDateString()}</CardTitle>
+            <CardTitle>Recipe from {formatDateTime(savedRecipe.created_at)}</CardTitle>
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
