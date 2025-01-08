@@ -20,7 +20,9 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
     try {
       const constraints = {
         video: {
-          facingMode: isMobile ? "environment" : "user"
+          facingMode: isMobile ? "environment" : "user",
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         }
       };
       
@@ -28,6 +30,7 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
+        await videoRef.current.play(); // Ensure video starts playing
       }
       setIsCapturing(true);
       setShowTargetOverlay(true);
@@ -55,32 +58,34 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
   const handleVideoClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!videoRef.current || !showTargetOverlay) return;
 
+    const video = videoRef.current;
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
+    // Create a canvas with the same dimensions as the video
     const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     
     if (ctx) {
-      ctx.drawImage(videoRef.current, 0, 0);
+      // Draw the current video frame
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Calculate the position of the click relative to the video dimensions
+      const videoX = (x / rect.width) * canvas.width;
+      const videoY = (y / rect.height) * canvas.height;
       
       // Draw a red circle at click position
       ctx.beginPath();
-      ctx.arc(
-        (x / rect.width) * canvas.width,
-        (y / rect.height) * canvas.height,
-        10,
-        0,
-        2 * Math.PI
-      );
+      ctx.arc(videoX, videoY, 10, 0, 2 * Math.PI);
       ctx.strokeStyle = 'red';
       ctx.lineWidth = 3;
       ctx.stroke();
       
-      const imageDataUrl = canvas.toDataURL('image/jpeg');
+      // Convert to base64 and pass to parent
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
       onImageCapture(imageDataUrl);
       stopCamera();
     }
