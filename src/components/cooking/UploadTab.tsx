@@ -32,17 +32,6 @@ export const UploadTab = ({
     }
   };
 
-  const handleDownload = () => {
-    if (!image) return;
-    
-    const link = document.createElement('a');
-    link.href = image;
-    link.download = 'recipe-ingredients.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="space-y-6">
       {!image && <CameraCapture onImageCapture={setImage} />}
@@ -70,7 +59,6 @@ export const UploadTab = ({
         <GenerateRecipeButton
           isLoading={isLoading}
           onGenerate={onGenerateRecipe}
-          onDownload={image ? handleDownload : undefined}
           disabled={!image}
           className="mx-auto"
         />
