@@ -93,10 +93,26 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="upload">Upload Ingredients</TabsTrigger>
-        <TabsTrigger value="recipe" disabled={!recipe}>Current Recipe</TabsTrigger>
-        <TabsTrigger value="saved">Saved Recipes</TabsTrigger>
+      <TabsList className="flex flex-col w-full max-w-xs mx-auto gap-2 bg-transparent p-0 mb-8">
+        <TabsTrigger 
+          value="upload" 
+          className="w-full py-3 px-6 bg-white/80 backdrop-blur-sm hover:bg-white/90 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white shadow-md hover:shadow-lg transition-all duration-300"
+        >
+          Upload Ingredients
+        </TabsTrigger>
+        <TabsTrigger 
+          value="recipe" 
+          disabled={!recipe}
+          className="w-full py-3 px-6 bg-white/80 backdrop-blur-sm hover:bg-white/90 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white shadow-md hover:shadow-lg transition-all duration-300"
+        >
+          Current Recipe
+        </TabsTrigger>
+        <TabsTrigger 
+          value="saved" 
+          className="w-full py-3 px-6 bg-white/80 backdrop-blur-sm hover:bg-white/90 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white shadow-md hover:shadow-lg transition-all duration-300"
+        >
+          Saved Recipes
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="upload" className="mt-6">
