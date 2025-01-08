@@ -13,12 +13,17 @@ export const CurrentRecipeTab = ({ recipe, onSave, onDelete }: CurrentRecipeTabP
       <div className="prose prose-sm max-w-none">
         <div dangerouslySetInnerHTML={{ __html: recipe.replace(/\n/g, "<br/>") }} />
       </div>
-      <div className="flex gap-2">
-        <Button onClick={onSave} className="flex-1">Save Recipe</Button>
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+        <Button 
+          onClick={onSave} 
+          className="w-full sm:flex-1 bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-all duration-300 shadow-md hover:shadow-lg"
+        >
+          Save Recipe
+        </Button>
         <Button 
           variant="destructive" 
           onClick={onDelete}
-          className="flex items-center gap-2"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-300"
         >
           <Trash2 className="h-4 w-4" />
           Delete
