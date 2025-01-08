@@ -69,10 +69,6 @@ const Cooking = () => {
               Upload your ingredients and let AI create the perfect recipe for you
             </p>
           </div>
-          
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 animate-fade-in">
-            <RecipeManager recipes={recipes} refetchRecipes={refetchRecipes} />
-          </div>
 
           <Collapsible className="w-full">
             <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-white/80 backdrop-blur-sm rounded-t-lg shadow-sm hover:bg-white/90 transition-colors">
@@ -83,6 +79,10 @@ const Cooking = () => {
               <ProfilePreferences />
             </CollapsibleContent>
           </Collapsible>
+          
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 animate-fade-in">
+            <RecipeManager recipes={recipes} refetchRecipes={refetchRecipes} />
+          </div>
         </div>
       </main>
     </div>
