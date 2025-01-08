@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Camera } from "lucide-react";
+import { Camera, X } from "lucide-react";
 import { useState, useRef } from "react";
 
 interface CameraCaptureProps {
@@ -21,8 +21,9 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
       const constraints = {
         video: {
           facingMode: isMobile ? "environment" : "user",
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: isMobile ? window.innerWidth : 1280 },
+          height: { ideal: isMobile ? window.innerHeight : 720 },
+          aspectRatio: isMobile ? window.innerWidth / window.innerHeight : 16/9
         }
       };
       
@@ -35,9 +36,12 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
       setIsCapturing(true);
       setShowTargetOverlay(true);
     } catch (error) {
+      console.error('Camera error:', error);
       toast({
         title: "Camera Error",
-        description: "Unable to access camera. Please check permissions.",
+        description: isMobile 
+          ? "Unable to access camera. Please check camera permissions in your device settings."
+          : "Unable to access camera. Please check browser permissions.",
         variant: "destructive",
       });
     }
@@ -63,35 +67,27 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    // Create a canvas with the same dimensions as the video
     const canvas = document.createElement('canvas');
     const actualWidth = video.videoWidth;
     const actualHeight = video.videoHeight;
     
-    // Set canvas size to match video dimensions
     canvas.width = actualWidth;
     canvas.height = actualHeight;
     const ctx = canvas.getContext('2d');
     
     if (ctx) {
-      // Clear the canvas and draw the video frame
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw the video frame
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       
-      // Calculate the position of the click relative to the video dimensions
       const videoX = (x / rect.width) * actualWidth;
       const videoY = (y / rect.height) * actualHeight;
       
-      // Draw a red circle at click position
       ctx.beginPath();
       ctx.arc(videoX, videoY, 10, 0, 2 * Math.PI);
       ctx.strokeStyle = 'red';
       ctx.lineWidth = 3;
       ctx.stroke();
       
-      // Convert to base64 with proper compression
       const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
       onImageCapture(imageDataUrl);
       stopCamera();
@@ -101,33 +97,41 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
   return (
     <div className="space-y-4">
       {isCapturing ? (
-        <div className="relative">
+        <div className={`relative ${isMobile ? 'fixed inset-0 z-50 bg-black' : ''}`}>
           <div 
             onClick={handleVideoClick}
-            className="cursor-crosshair"
-            style={{ position: 'relative' }}
+            className="cursor-crosshair relative h-full"
           >
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
-              className="w-full rounded-lg object-cover"
-              style={{ maxHeight: '80vh' }}
+              className={`${isMobile ? 'h-full w-full' : 'w-full rounded-lg'} object-cover`}
+              style={{ 
+                maxHeight: isMobile ? '100vh' : '80vh',
+                transform: isMobile ? 'scaleX(-1)' : 'none'
+              }}
             />
             {showTargetOverlay && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <p className="text-white bg-black/50 px-4 py-2 rounded">
-                  Click anywhere on the image to capture
-                </p>
+                <div className="relative">
+                  <div className="absolute -inset-4 border-2 border-white/50 rounded-lg" />
+                  <p className="text-white bg-black/50 px-4 py-2 rounded text-sm">
+                    Tap anywhere to capture
+                  </p>
+                </div>
               </div>
             )}
           </div>
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
-            <Button onClick={stopCamera} variant="destructive">
-              Cancel
-            </Button>
-          </div>
+          <Button
+            onClick={stopCamera}
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 text-white hover:bg-white/20"
+          >
+            <X className="h-6 w-6" />
+          </Button>
         </div>
       ) : (
         <Button
