@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { RecipeManager } from "@/components/cooking/RecipeManager";
 import { ProfilePreferences } from "@/components/cooking/ProfilePreferences";
-import { VirtualPantry } from "@/components/cooking/VirtualPantry";
 import {
   Collapsible,
   CollapsibleContent,
@@ -80,10 +79,6 @@ const Cooking = () => {
               <ProfilePreferences />
             </CollapsibleContent>
           </Collapsible>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8">
-            <VirtualPantry />
-          </div>
           
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 animate-fade-in">
             <RecipeManager recipes={recipes} refetchRecipes={refetchRecipes} />
