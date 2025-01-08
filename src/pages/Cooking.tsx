@@ -52,9 +52,9 @@ const Cooking = () => {
   return (
     <div className="min-h-screen bg-gradient-soft">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          <h1 className="hero-text text-center mb-4">
+          <h1 className="text-3xl md:text-5xl font-display font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary text-center mb-4">
             Your Personal Chef Assistant
           </h1>
           <p className="text-center text-lg text-muted-foreground mb-6">
