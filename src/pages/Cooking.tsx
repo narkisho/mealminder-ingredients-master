@@ -1,23 +1,13 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { generateRecipeFromImage, initializeGemini } from "@/services/gemini";
+import { toast } from "sonner";
+import { initializeGemini } from "@/services/gemini";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { UploadTab } from "@/components/cooking/UploadTab";
-import { CurrentRecipeTab } from "@/components/cooking/CurrentRecipeTab";
-import { SavedRecipesTab } from "@/components/cooking/SavedRecipesTab";
-import { Tables } from "@/integrations/supabase/types";
+import { RecipeManager } from "@/components/cooking/RecipeManager";
 
 const Cooking = () => {
-  const [image, setImage] = useState<string | null>(null);
-  const [recipe, setRecipe] = useState<string | null>(null);
-  const [additionalInstructions, setAdditionalInstructions] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("upload");
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const { data: recipes, refetch: refetchRecipes } = useQuery({
@@ -45,159 +35,26 @@ const Cooking = () => {
         const { data: { value }, error } = await supabase.functions.invoke('get-gemini-key');
         
         if (error || !value) {
-          toast({
-            title: "API Key Error",
-            description: "Could not retrieve the API key. Please try again later.",
-            variant: "destructive",
-          });
+          toast.error("Could not retrieve the API key. Please try again later.");
           return;
         }
 
         initializeGemini(value);
       } catch (error) {
         console.error("Error initializing:", error);
-        toast({
-          title: "Initialization Error",
-          description: "Failed to initialize the cooking interface",
-          variant: "destructive",
-        });
+        toast.error("Failed to initialize the cooking interface");
       }
     };
 
     initAPI();
-  }, [navigate, toast]);
-
-  const handleDeleteCurrentRecipe = () => {
-    setRecipe(null);
-    setImage(null);
-    setAdditionalInstructions("");
-    setActiveTab("upload");
-    toast({
-      title: "Recipe Deleted",
-      description: "The current recipe has been deleted.",
-    });
-  };
-
-  const handleSaveRecipe = async () => {
-    if (!recipe || !image) return;
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        toast({
-          title: "Authentication Error",
-          description: "Please log in to save recipes",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error } = await supabase.from('recipes').insert({
-        recipe_text: recipe + (additionalInstructions ? `\n\nAdditional Instructions:\n${additionalInstructions}` : ''),
-        ingredients_image: image,
-        user_id: session.user.id
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Recipe saved successfully!",
-      });
-
-      setAdditionalInstructions("");
-      refetchRecipes();
-    } catch (error) {
-      console.error("Error saving recipe:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save recipe. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEditRecipe = (savedRecipe: Tables<"recipes">) => {
-    setImage(savedRecipe.ingredients_image);
-    
-    const parts = savedRecipe.recipe_text.split('\n\nAdditional Instructions:\n');
-    setRecipe(parts[0]);
-    setAdditionalInstructions(parts[1] || '');
-    
-    setActiveTab("upload");
-    toast({
-      title: "Recipe loaded for editing",
-      description: "You can now modify and save this recipe as a new version.",
-    });
-  };
-
-  const handleGenerateRecipe = async () => {
-    if (!image) {
-      toast({
-        title: "No image selected",
-        description: "Please upload an image of your ingredients first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const generatedRecipe = await generateRecipeFromImage(image, {
-        skillLevel: "intermediate",
-        timeAvailable: 30,
-        additionalInstructions: additionalInstructions,
-      });
-      setRecipe(generatedRecipe);
-    } catch (error) {
-      toast({
-        title: "Error generating recipe",
-        description: error instanceof Error ? error.message : "Please try again",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">Cooking Assistant</h1>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="upload">Upload Ingredients</TabsTrigger>
-            <TabsTrigger value="recipe" disabled={!recipe}>Current Recipe</TabsTrigger>
-            <TabsTrigger value="saved">Saved Recipes</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="upload" className="mt-6">
-            <UploadTab
-              image={image}
-              setImage={setImage}
-              isLoading={isLoading}
-              onGenerateRecipe={handleGenerateRecipe}
-              additionalInstructions={additionalInstructions}
-              onInstructionsChange={setAdditionalInstructions}
-            />
-          </TabsContent>
-
-          <TabsContent value="recipe" className="mt-6">
-            {recipe && (
-              <CurrentRecipeTab 
-                recipe={recipe} 
-                onSave={handleSaveRecipe} 
-                onDelete={handleDeleteCurrentRecipe}
-              />
-            )}
-          </TabsContent>
-
-          <TabsContent value="saved" className="mt-6">
-            <SavedRecipesTab recipes={recipes} onEditRecipe={handleEditRecipe} />
-          </TabsContent>
-        </Tabs>
+        <RecipeManager recipes={recipes} refetchRecipes={refetchRecipes} />
       </main>
     </div>
   );

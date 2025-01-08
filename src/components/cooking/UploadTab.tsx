@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CameraCapture } from "./CameraCapture";
 import { FileUpload } from "./FileUpload";
+import { GenerateRecipeButton } from "./GenerateRecipeButton";
 
 interface UploadTabProps {
   image: string | null;
@@ -31,6 +32,17 @@ export const UploadTab = ({
     }
   };
 
+  const handleDownload = () => {
+    if (!image) return;
+    
+    const link = document.createElement('a');
+    link.href = image;
+    link.download = 'recipe-ingredients.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       {!image && <CameraCapture onImageCapture={setImage} />}
@@ -55,13 +67,13 @@ export const UploadTab = ({
       </div>
 
       <div className="text-center">
-        <Button
-          onClick={onGenerateRecipe}
-          disabled={!image || isLoading}
-          className="w-full max-w-md"
-        >
-          {isLoading ? "Generating Recipe..." : "Generate Recipe"}
-        </Button>
+        <GenerateRecipeButton
+          isLoading={isLoading}
+          onGenerate={onGenerateRecipe}
+          onDownload={image ? handleDownload : undefined}
+          disabled={!image}
+          className="mx-auto"
+        />
       </div>
     </div>
   );
