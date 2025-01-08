@@ -21,9 +21,9 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
       const constraints = {
         video: {
           facingMode: isMobile ? "environment" : "user",
-          width: { ideal: isMobile ? window.innerWidth : 1280 },
-          height: { ideal: isMobile ? window.innerHeight : 720 },
-          aspectRatio: isMobile ? window.innerWidth / window.innerHeight : 16/9
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          aspectRatio: 16/9
         }
       };
       
@@ -31,7 +31,12 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
-        await videoRef.current.play();
+        // Wait for video to be loaded before playing
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play();
+          }
+        };
       }
       setIsCapturing(true);
       setShowTargetOverlay(true);
@@ -59,49 +64,44 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
     setShowTargetOverlay(false);
   };
 
-  const handleVideoClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (!videoRef.current || !showTargetOverlay) return;
+  const captureImage = () => {
+    if (!videoRef.current) return;
 
     const video = videoRef.current;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
     const canvas = document.createElement('canvas');
-    const actualWidth = video.videoWidth;
-    const actualHeight = video.videoHeight;
     
-    canvas.width = actualWidth;
-    canvas.height = actualHeight;
+    // Set canvas size to match video's intrinsic size
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas and draw the current video frame
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Add a marker in the center
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
     
-    if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
-      const videoX = (x / rect.width) * actualWidth;
-      const videoY = (y / rect.height) * actualHeight;
-      
-      ctx.beginPath();
-      ctx.arc(videoX, videoY, 10, 0, 2 * Math.PI);
-      ctx.strokeStyle = 'red';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      
-      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      onImageCapture(imageDataUrl);
-      stopCamera();
-    }
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 10, 0, 2 * Math.PI);
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Convert to base64 with proper compression
+    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    onImageCapture(imageDataUrl);
+    stopCamera();
   };
 
   return (
     <div className="space-y-4">
       {isCapturing ? (
         <div className={`relative ${isMobile ? 'fixed inset-0 z-50 bg-black' : ''}`}>
-          <div 
-            onClick={handleVideoClick}
-            className="cursor-crosshair relative h-full"
-          >
+          <div className="relative h-full">
             <video
               ref={videoRef}
               autoPlay
@@ -118,11 +118,20 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
                 <div className="relative">
                   <div className="absolute -inset-4 border-2 border-white/50 rounded-lg" />
                   <p className="text-white bg-black/50 px-4 py-2 rounded text-sm">
-                    Tap anywhere to capture
+                    Click the button below to capture
                   </p>
                 </div>
               </div>
             )}
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
+              <Button
+                onClick={captureImage}
+                variant="secondary"
+                className="bg-white/90 hover:bg-white"
+              >
+                Capture Photo
+              </Button>
+            </div>
           </div>
           <Button
             onClick={stopCamera}
