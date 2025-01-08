@@ -38,6 +38,15 @@ export const UploadTab = ({
         onFileSelect={handleFileUpload}
       />
 
+      <div className="text-center">
+        <GenerateRecipeButton
+          isLoading={isLoading}
+          onGenerate={onGenerateRecipe}
+          disabled={!image}
+          className="mx-auto"
+        />
+      </div>
+
       <div className="space-y-2">
         <label htmlFor="additional-instructions" className="text-sm font-medium">
           Additional Instructions
@@ -48,15 +57,6 @@ export const UploadTab = ({
           value={additionalInstructions}
           onChange={(e) => onInstructionsChange(e.target.value)}
           className="min-h-[100px]"
-        />
-      </div>
-
-      <div className="text-center">
-        <GenerateRecipeButton
-          isLoading={isLoading}
-          onGenerate={onGenerateRecipe}
-          disabled={!image}
-          className="mx-auto"
         />
       </div>
     </div>
