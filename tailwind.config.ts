@@ -25,20 +25,20 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#7C9082",
+          DEFAULT: "#9b87f5",
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#FFF8F0",
-          foreground: "#2D3047",
-        },
-        accent: {
-          DEFAULT: "#E07A5F",
+          DEFAULT: "#1EAEDB",
           foreground: "#FFFFFF",
         },
+        accent: {
+          DEFAULT: "#D6BCFA",
+          foreground: "#1A1F2C",
+        },
         muted: {
-          DEFAULT: "#F4F4F5",
-          foreground: "#71717A",
+          DEFAULT: "#F1F1F1",
+          foreground: "#333333",
         },
         destructive: {
           DEFAULT: "#EF4444",
@@ -52,7 +52,7 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
-        display: ["Playfair Display", "serif"],
+        display: ["Outfit", "sans-serif"],
       },
       keyframes: {
         "fade-in": {
@@ -71,6 +71,10 @@ export default {
       animation: {
         "fade-in": "fade-in 0.5s ease-out",
         "fade-in-up": "fade-in-up 0.7s ease-out",
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-soft': 'linear-gradient(109.6deg, rgba(223,234,247,1) 11.2%, rgba(244,248,252,1) 91.1%)',
       },
     },
   },

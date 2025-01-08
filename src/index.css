@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,26 +6,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 220 33% 98%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 158 10% 53%;
+    --primary: 250 84% 74%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 37 100% 97%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 14 70% 62%;
-    --accent-foreground: 0 0% 100%;
+    --secondary: 197 72% 49%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 20%;
+    --accent: 270 89% 92%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 158 10% 53%;
-    --radius: 0.75rem;
+    --ring: 250 84% 74%;
+    --radius: 1rem;
   }
 }
 
@@ -34,7 +34,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-gradient-soft text-foreground font-sans min-h-screen;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display;
@@ -43,12 +43,12 @@
 
 @layer components {
   .hero-text {
-    @apply text-4xl md:text-6xl font-display font-bold leading-tight;
+    @apply text-4xl md:text-6xl font-display font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
   }
   .section-title {
     @apply text-3xl md:text-4xl font-display font-semibold mb-6;
   }
   .card-hover {
-    @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg;
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg bg-white/80 backdrop-blur-sm;
   }
 }

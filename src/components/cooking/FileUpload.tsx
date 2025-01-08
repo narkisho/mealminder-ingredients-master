@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
 
 interface FileUploadProps {
   image: string | null;
@@ -21,7 +22,7 @@ export const FileUpload = ({ image, onImageChange, onFileSelect }: FileUploadPro
 
   return (
     <div
-      className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+      className="border-2 border-dashed border-primary/30 rounded-xl p-8 text-center cursor-pointer hover:border-primary transition-colors bg-white/50 backdrop-blur-sm"
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
       onClick={() => document.getElementById("file-upload")?.click()}
@@ -31,7 +32,7 @@ export const FileUpload = ({ image, onImageChange, onFileSelect }: FileUploadPro
           <img
             src={image}
             alt="Uploaded ingredients"
-            className="max-h-64 mx-auto rounded-lg"
+            className="max-h-64 mx-auto rounded-lg shadow-md"
           />
           <div className="flex justify-center space-x-4">
             <Button
@@ -40,6 +41,7 @@ export const FileUpload = ({ image, onImageChange, onFileSelect }: FileUploadPro
                 onImageChange(null);
               }}
               variant="outline"
+              className="bg-white hover:bg-gray-50"
             >
               Remove Image
             </Button>
@@ -47,7 +49,8 @@ export const FileUpload = ({ image, onImageChange, onFileSelect }: FileUploadPro
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-lg">
+          <Upload className="w-12 h-12 mx-auto text-primary/60" />
+          <p className="text-lg font-display">
             Drag/Drop an Image Here, or Click to Select or Take a Photo
           </p>
           <p className="text-sm text-muted-foreground">
