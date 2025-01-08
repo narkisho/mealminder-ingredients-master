@@ -8,7 +8,7 @@ import { CurrentRecipeTab } from "./CurrentRecipeTab";
 import { SavedRecipesTab } from "./SavedRecipesTab";
 import { generateRecipeFromImage } from "@/services/gemini";
 import { SubscriptionModal } from "../subscription/SubscriptionModal";
-import { useQuery } from "@tanstack/react-query";
+import { useSubscription } from "./hooks/useSubscription";
 
 interface RecipeManagerProps {
   recipes: Tables<"recipes">[] | undefined;
@@ -23,31 +23,7 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
   const [activeTab, setActiveTab] = useState("upload");
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
-  // Fetch user's subscription status and recipe generation count
-  const { data: subscriptionData } = useQuery({
-    queryKey: ['subscription'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return null;
-
-      const { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .single();
-
-      const { data: generations } = await supabase
-        .from('recipe_generations')
-        .select('count')
-        .eq('user_id', session.user.id)
-        .single();
-
-      return {
-        subscription,
-        generationCount: generations?.count || 0
-      };
-    }
-  });
+  const { data: subscriptionData } = useSubscription();
 
   const handleDeleteCurrentRecipe = () => {
     setRecipe(null);
@@ -105,8 +81,8 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
     }
 
     // Check subscription status and generation count
-    if (!subscriptionData?.subscription?.status === 'active' && 
-        subscriptionData?.generationCount >= 3) {
+    if (!subscriptionData?.subscription?.status && 
+        (subscriptionData?.generationCount || 0) >= 3) {
       setShowSubscriptionModal(true);
       return;
     }
