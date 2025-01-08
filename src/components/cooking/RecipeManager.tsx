@@ -139,7 +139,11 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
         </TabsContent>
 
         <TabsContent value="saved" className="mt-8">
-          <SavedRecipesTab recipes={recipes} onEditRecipe={handleEditRecipe} />
+          <SavedRecipesTab 
+            recipes={recipes} 
+            onEditRecipe={handleEditRecipe} 
+            refetchRecipes={refetchRecipes}
+          />
         </TabsContent>
       </div>
     </Tabs>

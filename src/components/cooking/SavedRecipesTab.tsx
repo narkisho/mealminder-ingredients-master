@@ -19,9 +19,10 @@ import { useState } from "react";
 interface SavedRecipesTabProps {
   recipes: Tables<"recipes">[] | undefined;
   onEditRecipe: (recipe: Tables<"recipes">) => void;
+  refetchRecipes: () => void;
 }
 
-export const SavedRecipesTab = ({ recipes, onEditRecipe }: SavedRecipesTabProps) => {
+export const SavedRecipesTab = ({ recipes, onEditRecipe, refetchRecipes }: SavedRecipesTabProps) => {
   const { toast } = useToast();
   const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
 
@@ -38,6 +39,8 @@ export const SavedRecipesTab = ({ recipes, onEditRecipe }: SavedRecipesTabProps)
         title: "Success",
         description: "Recipe deleted successfully",
       });
+      
+      refetchRecipes(); // Immediately refetch recipes after successful deletion
     } catch (error) {
       toast({
         title: "Error",
