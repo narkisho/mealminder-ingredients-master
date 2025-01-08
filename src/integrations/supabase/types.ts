@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      platform_stats: {
+        Row: {
+          growth: string
+          id: string
+          name: string
+          previous_stats: string | null
+          stats: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          growth: string
+          id?: string
+          name: string
+          previous_stats?: string | null
+          stats: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          growth?: string
+          id?: string
+          name?: string
+          previous_stats?: string | null
+          stats?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           available_equipment: string[] | null
@@ -63,6 +93,42 @@ export type Database = {
           ingredients_image?: string | null
           recipe_text?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      trends: {
+        Row: {
+          category: string
+          growth: number
+          id: string
+          platform: string
+          probability: number
+          timestamp: string
+          title: string
+          user_id: string
+          velocity: number
+        }
+        Insert: {
+          category: string
+          growth: number
+          id?: string
+          platform: string
+          probability: number
+          timestamp?: string
+          title: string
+          user_id: string
+          velocity: number
+        }
+        Update: {
+          category?: string
+          growth?: number
+          id?: string
+          platform?: string
+          probability?: number
+          timestamp?: string
+          title?: string
+          user_id?: string
+          velocity?: number
         }
         Relationships: []
       }
