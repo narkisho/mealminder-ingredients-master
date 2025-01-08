@@ -40,15 +40,22 @@ const CUISINE_OPTIONS = [
   "american",
 ];
 
+interface TimePreferences {
+  weekday: number;
+  weekend: number;
+}
+
+const DEFAULT_TIME_PREFERENCES: TimePreferences = {
+  weekday: 30,
+  weekend: 60,
+};
+
 export const ProfilePreferences = () => {
   const [skillLevel, setSkillLevel] = useState<string | null>(null);
   const [dietaryPreferences, setDietaryPreferences] = useState<string[]>([]);
   const [equipment, setEquipment] = useState<string[]>([]);
   const [cuisinePreferences, setCuisinePreferences] = useState<string[]>([]);
-  const [timePreferences, setTimePreferences] = useState<{
-    weekday: number;
-    weekend: number;
-  }>({ weekday: 30, weekend: 60 });
+  const [timePreferences, setTimePreferences] = useState<TimePreferences>(DEFAULT_TIME_PREFERENCES);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -76,7 +83,16 @@ export const ProfilePreferences = () => {
         setDietaryPreferences(profile.dietary_preferences || []);
         setEquipment(profile.available_equipment || []);
         setCuisinePreferences(profile.cuisine_preferences || []);
-        setTimePreferences(profile.time_preferences || { weekday: 30, weekend: 60 });
+        
+        // Safely handle time preferences
+        const savedTimePreferences = profile.time_preferences as TimePreferences;
+        if (savedTimePreferences && 
+            typeof savedTimePreferences.weekday === 'number' && 
+            typeof savedTimePreferences.weekend === 'number') {
+          setTimePreferences(savedTimePreferences);
+        } else {
+          setTimePreferences(DEFAULT_TIME_PREFERENCES);
+        }
       }
     } catch (error) {
       console.error("Error loading preferences:", error);
