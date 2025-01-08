@@ -48,7 +48,7 @@ export const FileUpload = ({ image, onImageChange, onFileSelect }: FileUploadPro
       ) : (
         <div className="space-y-4">
           <p className="text-lg">
-            Drag and drop an image here, or click to select a file
+            Drag/Drop an Image Here, or Click to Select or Take a Photo
           </p>
           <p className="text-sm text-muted-foreground">
             Supported formats: JPG, PNG
