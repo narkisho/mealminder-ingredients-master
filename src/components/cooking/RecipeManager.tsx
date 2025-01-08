@@ -7,6 +7,8 @@ import { UploadTab } from "./UploadTab";
 import { CurrentRecipeTab } from "./CurrentRecipeTab";
 import { SavedRecipesTab } from "./SavedRecipesTab";
 import { generateRecipeFromImage } from "@/services/gemini";
+import { SubscriptionModal } from "../subscription/SubscriptionModal";
+import { useQuery } from "@tanstack/react-query";
 
 interface RecipeManagerProps {
   recipes: Tables<"recipes">[] | undefined;
@@ -19,6 +21,33 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
   const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("upload");
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+
+  // Fetch user's subscription status and recipe generation count
+  const { data: subscriptionData } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return null;
+
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
+
+      const { data: generations } = await supabase
+        .from('recipe_generations')
+        .select('count')
+        .eq('user_id', session.user.id)
+        .single();
+
+      return {
+        subscription,
+        generationCount: generations?.count || 0
+      };
+    }
+  });
 
   const handleDeleteCurrentRecipe = () => {
     setRecipe(null);
@@ -49,9 +78,9 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
       toast.success("Recipe saved successfully!");
       setAdditionalInstructions("");
       refetchRecipes();
-      setActiveTab("upload"); // Switch back to upload tab after saving
-      setRecipe(null); // Clear the current recipe
-      setImage(null); // Clear the current image
+      setActiveTab("upload");
+      setRecipe(null);
+      setImage(null);
     } catch (error) {
       console.error("Error saving recipe:", error);
       toast.error("Failed to save recipe. Please try again.");
@@ -75,6 +104,13 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
       return;
     }
 
+    // Check subscription status and generation count
+    if (!subscriptionData?.subscription?.status === 'active' && 
+        subscriptionData?.generationCount >= 3) {
+      setShowSubscriptionModal(true);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const generatedRecipe = await generateRecipeFromImage(image, {
@@ -82,6 +118,15 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
         timeAvailable: 30,
         additionalInstructions: additionalInstructions,
       });
+
+      // Update generation count
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase.from('recipe_generations')
+          .update({ count: (subscriptionData?.generationCount || 0) + 1 })
+          .eq('user_id', session.user.id);
+      }
+
       setRecipe(generatedRecipe);
       setActiveTab("recipe");
     } catch (error) {
@@ -92,60 +137,67 @@ export const RecipeManager = ({ recipes, refetchRecipes }: RecipeManagerProps) =
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
-      <TabsList className="flex flex-col w-full max-w-xs mx-auto gap-1 bg-transparent p-0 mb-12 relative z-10">
-        <TabsTrigger 
-          value="upload" 
-          className="w-full py-2 px-6 bg-white/80 backdrop-blur-sm hover:bg-white/90 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white shadow-md hover:shadow-lg transition-all duration-300"
-        >
-          Upload Ingredients
-        </TabsTrigger>
-        <TabsTrigger 
-          value="recipe" 
-          disabled={!recipe}
-          className="w-full py-2 px-6 bg-white/80 backdrop-blur-sm hover:bg-white/90 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white shadow-md hover:shadow-lg transition-all duration-300"
-        >
-          Current Recipe
-        </TabsTrigger>
-        <TabsTrigger 
-          value="saved" 
-          className="w-full py-2 px-6 bg-white/80 backdrop-blur-sm hover:bg-white/90 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white shadow-md hover:shadow-lg transition-all duration-300"
-        >
-          Saved Recipes
-        </TabsTrigger>
-      </TabsList>
+    <>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
+        <TabsList className="flex flex-col w-full max-w-xs mx-auto gap-1 bg-transparent p-0 mb-12 relative z-10">
+          <TabsTrigger 
+            value="upload" 
+            className="w-full py-2 px-6 bg-white/80 backdrop-blur-sm hover:bg-white/90 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white shadow-md hover:shadow-lg transition-all duration-300"
+          >
+            Upload Ingredients
+          </TabsTrigger>
+          <TabsTrigger 
+            value="recipe" 
+            disabled={!recipe}
+            className="w-full py-2 px-6 bg-white/80 backdrop-blur-sm hover:bg-white/90 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white shadow-md hover:shadow-lg transition-all duration-300"
+          >
+            Current Recipe
+          </TabsTrigger>
+          <TabsTrigger 
+            value="saved" 
+            className="w-full py-2 px-6 bg-white/80 backdrop-blur-sm hover:bg-white/90 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white shadow-md hover:shadow-lg transition-all duration-300"
+          >
+            Saved Recipes
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="relative z-0">
-        <TabsContent value="upload" className="mt-8">
-          <UploadTab
-            image={image}
-            setImage={setImage}
-            isLoading={isLoading}
-            onGenerateRecipe={handleGenerateRecipe}
-            additionalInstructions={additionalInstructions}
-            onInstructionsChange={setAdditionalInstructions}
-          />
-        </TabsContent>
-
-        <TabsContent value="recipe" className="mt-8">
-          {recipe && (
-            <CurrentRecipeTab 
-              recipe={recipe} 
+        <div className="relative z-0">
+          <TabsContent value="upload" className="mt-8">
+            <UploadTab
               image={image}
-              onSave={handleSaveRecipe} 
-              onDelete={handleDeleteCurrentRecipe}
+              setImage={setImage}
+              isLoading={isLoading}
+              onGenerateRecipe={handleGenerateRecipe}
+              additionalInstructions={additionalInstructions}
+              onInstructionsChange={setAdditionalInstructions}
             />
-          )}
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent value="saved" className="mt-8">
-          <SavedRecipesTab 
-            recipes={recipes} 
-            onEditRecipe={handleEditRecipe} 
-            refetchRecipes={refetchRecipes}
-          />
-        </TabsContent>
-      </div>
-    </Tabs>
+          <TabsContent value="recipe" className="mt-8">
+            {recipe && (
+              <CurrentRecipeTab 
+                recipe={recipe} 
+                image={image}
+                onSave={handleSaveRecipe} 
+                onDelete={handleDeleteCurrentRecipe}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="saved" className="mt-8">
+            <SavedRecipesTab 
+              recipes={recipes} 
+              onEditRecipe={handleEditRecipe} 
+              refetchRecipes={refetchRecipes}
+            />
+          </TabsContent>
+        </div>
+      </Tabs>
+
+      <SubscriptionModal 
+        open={showSubscriptionModal} 
+        onOpenChange={setShowSubscriptionModal}
+      />
+    </>
   );
 };

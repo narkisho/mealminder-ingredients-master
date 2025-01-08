@@ -1,1 +1,14 @@
 project_id = "jjabsgftnzhulvzaxjlf"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[[functions]]
+name = "get-gemini-key"
+verify_jwt = true
+
+[[functions]]
+name = "handle-paypal-webhook"
+verify_jwt = false

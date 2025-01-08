@@ -158,6 +158,9 @@ export type Database = {
           created_at: string
           current_period_end: string | null
           id: string
+          payment_provider: string | null
+          paypal_customer_id: string | null
+          paypal_subscription_id: string | null
           status: string
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -168,6 +171,9 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           id?: string
+          payment_provider?: string | null
+          paypal_customer_id?: string | null
+          paypal_subscription_id?: string | null
           status: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -178,6 +184,9 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           id?: string
+          payment_provider?: string | null
+          paypal_customer_id?: string | null
+          paypal_subscription_id?: string | null
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
