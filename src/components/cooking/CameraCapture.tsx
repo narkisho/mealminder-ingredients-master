@@ -30,7 +30,7 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
-        await videoRef.current.play(); // Ensure video starts playing
+        await videoRef.current.play();
       }
       setIsCapturing(true);
       setShowTargetOverlay(true);
@@ -65,17 +65,24 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
 
     // Create a canvas with the same dimensions as the video
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    const actualWidth = video.videoWidth;
+    const actualHeight = video.videoHeight;
+    
+    // Set canvas size to match video dimensions
+    canvas.width = actualWidth;
+    canvas.height = actualHeight;
     const ctx = canvas.getContext('2d');
     
     if (ctx) {
-      // Draw the current video frame
+      // Clear the canvas and draw the video frame
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw the video frame
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       
       // Calculate the position of the click relative to the video dimensions
-      const videoX = (x / rect.width) * canvas.width;
-      const videoY = (y / rect.height) * canvas.height;
+      const videoX = (x / rect.width) * actualWidth;
+      const videoY = (y / rect.height) * actualHeight;
       
       // Draw a red circle at click position
       ctx.beginPath();
@@ -84,7 +91,7 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
       ctx.lineWidth = 3;
       ctx.stroke();
       
-      // Convert to base64 and pass to parent
+      // Convert to base64 with proper compression
       const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
       onImageCapture(imageDataUrl);
       stopCamera();
@@ -104,7 +111,9 @@ export const CameraCapture = ({ onImageCapture }: CameraCaptureProps) => {
               ref={videoRef}
               autoPlay
               playsInline
-              className="w-full rounded-lg"
+              muted
+              className="w-full rounded-lg object-cover"
+              style={{ maxHeight: '80vh' }}
             />
             {showTargetOverlay && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
