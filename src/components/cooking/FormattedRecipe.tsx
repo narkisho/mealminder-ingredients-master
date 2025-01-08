@@ -23,26 +23,71 @@ export const FormattedRecipe = ({ recipe }: FormattedRecipeProps) => {
     }
   };
 
-  // Split the recipe into sections based on common headers
+  // Split the recipe into sections based on common headers and format them
   const formatRecipe = (text: string) => {
-    const sections = text.split(/\n(?=[A-Z][A-Za-z\s]+:)/);
+    const sections = text.split(/\n(?=\*\*[^*]+:\*\*|\*\*[^*]+\*\*(?!\:))/);
+    
     return sections.map((section, index) => {
-      const [header, ...content] = section.split(':');
-      if (content.length === 0) return <p key={index} className="mb-4">{header}</p>;
+      // Handle confidence scores and ingredient lists
+      if (section.includes("Confidence:")) {
+        const [ingredient, confidence] = section.split("(Confidence:");
+        return (
+          <li key={index} className="mb-3 text-gray-700">
+            <span className="font-semibold">{ingredient.replace(/\*/g, '').trim()}</span>
+            <span className="text-gray-500 text-sm"> (Confidence: {confidence.replace(/[*)\n]/g, '').trim()})</span>
+          </li>
+        );
+      }
       
-      return (
-        <div key={index} className="mb-6">
-          <h3 className="text-xl font-display font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            {header.trim()}:
-          </h3>
-          <div className="pl-4 border-l-2 border-primary/30">
-            {content.join(':').split('\n').map((line, i) => (
-              <p key={i} className="mb-2 text-gray-700">
-                {line.trim()}
-              </p>
-            ))}
+      // Handle section headers
+      if (section.startsWith("**")) {
+        const [header, ...content] = section.split("\n");
+        const headerText = header.replace(/\*\*/g, '').trim();
+        
+        return (
+          <div key={index} className="mb-8">
+            <h3 className="text-xl font-display font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent border-b-2 border-primary/20 pb-2">
+              {headerText}
+            </h3>
+            <div className="pl-4 space-y-3">
+              {content.map((line, i) => {
+                // Handle bullet points
+                if (line.trim().startsWith("*")) {
+                  return (
+                    <li key={i} className="list-none ml-4 text-gray-700">
+                      {line.replace(/^\*\s/, "• ")}
+                    </li>
+                  );
+                }
+                // Handle numbered instructions
+                if (line.trim().match(/^\d+\./)) {
+                  return (
+                    <div key={i} className="flex gap-2 text-gray-700">
+                      <span className="font-semibold min-w-[24px]">{line.match(/^\d+/)[0]}.</span>
+                      <p>{line.replace(/^\d+\.\s*/, "").trim()}</p>
+                    </div>
+                  );
+                }
+                // Regular text
+                if (line.trim()) {
+                  return (
+                    <p key={i} className="text-gray-700">
+                      {line.trim()}
+                    </p>
+                  );
+                }
+                return null;
+              })}
+            </div>
           </div>
-        </div>
+        );
+      }
+      
+      // Return regular text if no special formatting needed
+      return section.trim() && (
+        <p key={index} className="mb-4 text-gray-700">
+          {section.trim()}
+        </p>
       );
     });
   };
@@ -51,12 +96,14 @@ export const FormattedRecipe = ({ recipe }: FormattedRecipeProps) => {
     <div className="space-y-6">
       <div 
         id="recipe-content"
-        className="prose prose-lg max-w-none bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg"
+        className="prose prose-lg max-w-none bg-white/90 backdrop-blur-sm rounded-xl p-8 shadow-lg"
       >
-        <h2 className="text-2xl font-display font-bold mb-6 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+        <h2 className="text-3xl font-display font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent border-b-2 border-primary/20 pb-4">
           Your Generated Recipe
         </h2>
-        {formatRecipe(recipe)}
+        <div className="space-y-6">
+          {formatRecipe(recipe)}
+        </div>
       </div>
       
       <Button
