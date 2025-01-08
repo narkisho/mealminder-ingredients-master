@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { FormattedRecipe } from "./FormattedRecipe";
 
 interface CurrentRecipeTabProps {
   recipe: string;
@@ -9,10 +10,9 @@ interface CurrentRecipeTabProps {
 
 export const CurrentRecipeTab = ({ recipe, onSave, onDelete }: CurrentRecipeTabProps) => {
   return (
-    <div className="space-y-4">
-      <div className="prose prose-sm max-w-none">
-        <div dangerouslySetInnerHTML={{ __html: recipe.replace(/\n/g, "<br/>") }} />
-      </div>
+    <div className="space-y-6">
+      <FormattedRecipe recipe={recipe} />
+      
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
         <Button 
           onClick={onSave} 
