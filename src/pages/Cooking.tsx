@@ -60,7 +60,7 @@ const Cooking = () => {
           <p className="text-center text-lg text-muted-foreground mb-16">
             Upload your ingredients and let AI create the perfect recipe for you
           </p>
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 animate-fade-in mt-24">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 animate-fade-in mt-24 mb-24">
             <RecipeManager recipes={recipes} refetchRecipes={refetchRecipes} />
           </div>
         </div>
