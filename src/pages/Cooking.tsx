@@ -67,6 +67,17 @@ const Cooking = () => {
     initAPI();
   }, [navigate, toast]);
 
+  const handleDeleteCurrentRecipe = () => {
+    setRecipe(null);
+    setImage(null);
+    setAdditionalInstructions("");
+    setActiveTab("upload");
+    toast({
+      title: "Recipe Deleted",
+      description: "The current recipe has been deleted.",
+    });
+  };
+
   const handleSaveRecipe = async () => {
     if (!recipe || !image) return;
 
@@ -174,7 +185,13 @@ const Cooking = () => {
           </TabsContent>
 
           <TabsContent value="recipe" className="mt-6">
-            {recipe && <CurrentRecipeTab recipe={recipe} onSave={handleSaveRecipe} />}
+            {recipe && (
+              <CurrentRecipeTab 
+                recipe={recipe} 
+                onSave={handleSaveRecipe} 
+                onDelete={handleDeleteCurrentRecipe}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="saved" className="mt-6">
